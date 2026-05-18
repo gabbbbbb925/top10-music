@@ -1,0 +1,36 @@
+name: Update Top 10 Weekly
+
+on:
+  schedule:
+      - cron: '0 2 * * 6'
+        workflow_dispatch:
+
+        jobs:
+          update:
+              runs-on: ubuntu-latest
+                  permissions:
+                        contents: write
+                            steps:
+                                  - uses: actions/checkout@v4
+
+                                        - name: Setup Python
+                                                uses: actions/setup-python@v5
+                                                        with:
+                                                                  python-version: '3.11'
+
+                                                                        - name: Install dependencies
+                                                                                run: pip install requests
+
+                                                                                      - name: Fetch Top 10 from Spotify
+                                                                                              env:
+                                                                                                        SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+                                                                                                                  SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+                                                                                                                          run: python fetch_top10.py
+                                                                                                                          
+                                                                                                                                - name: Commit and push
+                                                                                                                                        run: |
+                                                                                                                                                  git config user.name "WeeklyTop10 Bot"
+                                                                                                                                                            git config user.email "bot@weeklytop10.com"
+                                                                                                                                                                      git add data/top10.json
+                                                                                                                                                                                git diff --staged --quiet || git commit -m "Top 10 mis a jour - $(date '+%Y-%m-%d')"
+                                                                                                                                                                                          git push
